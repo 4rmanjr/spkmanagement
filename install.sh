@@ -205,18 +205,43 @@ else
     exit 1
 fi
 
-# Final message
+# Final message - responsive box
 echo
-echo -e "${CYAN}╔══════════════════════════════════════════════════════════╗${RESET}"
-echo -e "${CYAN}║${RESET}           ${GREEN}🎉 Instalasi Berhasil!${RESET}                     ${CYAN}║${RESET}"
-echo -e "${CYAN}╠══════════════════════════════════════════════════════════╣${RESET}"
-echo -e "${CYAN}║${RESET}  ${GRAY}Jalankan dengan:${RESET}                                     ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}                                                      ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}     ${BOLD}mailinglist${RESET}                                      ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}                                                      ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}  ${GRAY}atau dengan file:${RESET}                                  ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}                                                      ${CYAN}║${RESET}"
-echo -e "${CYAN}║${RESET}     ${BOLD}mailinglist file.xlsx${RESET}                          ${CYAN}║${RESET}"
-echo -e "${CYAN}╠══════════════════════════════════════════════════════════╣${RESET}"
-echo -e "${CYAN}║${RESET}  ${GRAY}Uninstall:${RESET}  ./install.sh --uninstall               ${CYAN}║${RESET}"
-echo -e "${CYAN}╚══════════════════════════════════════════════════════════╝${RESET}"
+
+# Box width (content area)
+BOX_WIDTH=50
+
+# Helper function to calculate visible length (excluding ANSI codes)
+visible_length() {
+    local str="$1"
+    # Remove ANSI color codes
+    local clean=$(echo -e "$str" | sed 's/\x1b\[[0-9;]*m//g')
+    # Count characters (emojis take 2 columns)
+    echo -n "$clean" | wc -m
+}
+
+# Helper to print centered text
+print_box_line() {
+    local text="$1"
+    local visible_len=$(visible_length "$text")
+    local padding=$(( (BOX_WIDTH - visible_len) / 2 ))
+    local right_padding=$(( BOX_WIDTH - visible_len - padding ))
+    printf "${CYAN}║${RESET}%${padding}s${text}%${right_padding}s${CYAN}║${RESET}\n" "" ""
+}
+
+# Print box
+echo -e "${CYAN}╔$(printf '═%.0s' $(seq 1 $BOX_WIDTH))╗${RESET}"
+print_box_line ""
+print_box_line "🎉 Instalasi Berhasil!"
+print_box_line ""
+echo -e "${CYAN}╠$(printf '═%.0s' $(seq 1 $BOX_WIDTH))╣${RESET}"
+print_box_line "Jalankan dengan:"
+print_box_line ""
+printf "${CYAN}║${RESET}%20s${BOLD}mailinglist${RESET}%19s${CYAN}║${RESET}\n" "" ""
+print_box_line ""
+print_box_line "atau dengan file:"
+print_box_line ""
+printf "${CYAN}║${RESET}%14s${BOLD}mailinglist file.xlsx${RESET}%14s${CYAN}║${RESET}\n" "" ""
+echo -e "${CYAN}╠$(printf '═%.0s' $(seq 1 $BOX_WIDTH))╣${RESET}"
+printf "${CYAN}║${RESET}  Uninstall: ./install.sh --uninstall%12s${CYAN}║${RESET}\n" ""
+echo -e "${CYAN}╚$(printf '═%.0s' $(seq 1 $BOX_WIDTH))╝${RESET}"
