@@ -35,3 +35,51 @@ export interface ApiResponse<T> {
   data?: T;
   error?: string;
 }
+
+// SPK Management Types
+export interface Penyegelan {
+  rowid?: number;
+  'NO.': number | null;
+  'TANGGAL': string;
+  'NOMOR PELANGGAN': string;
+  'NAMA': string;
+  'JUMLAH BLN': number;
+  'TOTAL REK': number;
+  'DENDA': number;
+  'JUMLAH': number;
+  'KET': string;
+}
+
+export interface Pencabutan {
+  rowid?: number;
+  'NO': number;
+  'NO SAMB': string;
+  'NAMA': string;
+  'ALAMAT': string;
+  'TOTAL TUNGGAKAN': number;
+  'JUMLAH TUNGGAKAN (Rp)': number;
+  'KET': string;
+}
+
+export interface SPKStats {
+  total_penyegelan: number;
+  total_pencabutan: number;
+  total_all: number;
+  penyegelan_by_ket: Array<{ KET: string; count: number }>;
+  pencabutan_by_ket: Array<{ KET: string; count: number }>;
+  total_tunggakan_penyegelan: number;
+  total_tunggakan_pencabutan: number;
+  total_tunggakan_all: number;
+}
+
+export interface SPKItem {
+  spk_number: string;
+  data: Penyegelan | Pencabutan;
+  type: 'penyegelan' | 'pencabutan';
+  generated_at: string;
+}
+
+export interface GenerateSPKResponse {
+  spk_list: SPKItem[];
+  total: number;
+}

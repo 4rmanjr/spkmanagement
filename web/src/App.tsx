@@ -7,6 +7,7 @@ import { Customers } from './pages/Customers';
 import { Letters } from './pages/Letters';
 import { Mailing } from './pages/Mailing';
 import { Settings } from './pages/Settings';
+import { SPKManagement } from './pages/SPKManagement';
 import './App.css';
 
 function App() {
@@ -51,6 +52,14 @@ function App() {
                 <Header onMenuToggle={handleMenuToggle} title="Mailing" />
                 <div className="content">
                   <Mailing />
+                </div>
+              </>
+            } />
+            <Route path="/spk" element={
+              <>
+                <Header onMenuToggle={handleMenuToggle} title="Manajemen SPK" />
+                <div className="content">
+                  <SPKManagement />
                 </div>
               </>
             } />
