@@ -14,6 +14,7 @@ GRAY='\033[0;90m'
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOURCE_FILE="$SCRIPT_DIR/spk_management.py"
 TARGET_LINK="/usr/local/bin/spkmanagement"
+OLD_LINK="/usr/local/bin/mailinglist"
 APP_NAME="SPK Management"
 APP_VERSION="1.0.0"
 
@@ -82,15 +83,29 @@ if [ "$1" == "--uninstall" ] || [ "$1" == "-u" ]; then
     print_header
     print_step "Menghapus instalasi..."
     
-    if [ -L "$TARGET_LINK" ]; then
+    # Check for new installation
+    if [ -L "$TARGET_LINK" ] || [ -e "$TARGET_LINK" ]; then
         if sudo rm "$TARGET_LINK"; then
-            print_success "Symlink berhasil dihapus"
+            print_success "Command 'spkmanagement' berhasil dihapus"
         else
             print_error "Gagal menghapus symlink"
             exit 1
         fi
-    else
-        print_warning "Symlink tidak ditemukan"
+    fi
+    
+    # Check for old installation
+    if [ -L "$OLD_LINK" ] || [ -e "$OLD_LINK" ]; then
+        if sudo rm "$OLD_LINK"; then
+            print_success "Command 'mailinglist' lama berhasil dihapus"
+        else
+            print_error "Gagal menghapus symlink lama"
+            exit 1
+        fi
+    fi
+    
+    # Check if any installation was found
+    if [ ! -L "$TARGET_LINK" ] && [ ! -L "$OLD_LINK" ] && [ ! -e "$TARGET_LINK" ] && [ ! -e "$OLD_LINK" ]; then
+        print_warning "Tidak ada instalasi yang ditemukan"
     fi
     
     echo
@@ -102,6 +117,19 @@ fi
 
 # Main installation
 print_header
+
+# Check and remove old installation
+if [ -L "$OLD_LINK" ] || [ -e "$OLD_LINK" ]; then
+    print_warning "Instalasi lama 'mailinglist' terdeteksi"
+    print_step "Menghapus instalasi lama..."
+    if sudo rm "$OLD_LINK"; then
+        print_success "Instalasi lama berhasil dihapus"
+    else
+        print_error "Gagal menghapus instalasi lama"
+        exit 1
+    fi
+    echo
+fi
 
 # Pre-flight checks
 print_step "Melakukan pre-flight checks..."
