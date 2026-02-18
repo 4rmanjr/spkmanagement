@@ -214,6 +214,64 @@ def load_excel_data(excel_file):
         print("\nTips: Jika error berlanjut, buka file Excel tersebut, lalu 'Save As' dengan nama baru.")
         return None
 
+def clear_screen():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def print_header():
+    clear_screen()
+    print("\033[1;36m" + "═" * 60 + "\033[0m")
+    print("\033[1;36m║\033[0m" + " " * 18 + "\033[1;33m📧 MAILING LIST CLI\033[0m" + " " * 21 + "\033[1;36m║\033[0m")
+    print("\033[1;36m║\033[0m" + " " * 14 + "\033[90mPDF Generator & Report Tool\033[0m" + " " * 17 + "\033[1;36m║\033[0m")
+    print("\033[1;36m" + "═" * 60 + "\033[0m")
+
+def print_menu():
+    print("\n\033[1;35m┌─ MENU UTAMA\033[0m")
+    print("\033[1;35m│\033[0m")
+    print("\033[1;35m│\033[0m  \033[1;32m[1]\033[0m \033[90mLihat\033[0m Daftar Pelanggan (CSV)")
+    print("\033[1;35m│\033[0m  \033[1;32m[2]\033[0m \033[90mCetak\033[0m Laporan dari Excel")
+    print("\033[1;35m│\033[0m  \033[1;32m[3]\033[0m \033[90mCetak\033[0m Laporan dari CSV")
+    print("\033[1;35m│\033[0m  \033[1;31m[q]\033[0m \033[90mKeluar\033[0m")
+    print("\033[1;35m│\033[0m")
+
+def print_status(message, status="info"):
+    icons = {"info": "ℹ️", "success": "✅", "error": "❌", "warning": "⚠️"}
+    colors = {"info": "34", "success": "32", "error": "31", "warning": "33"}
+    icon = icons.get(status, "ℹ️")
+    color = colors.get(status, "34")
+    print(f"\033[1;{color}m{icon} {message}\033[0m")
+
+def print_table(headers, rows, max_width=58):
+    if not rows:
+        print("\033[90m   (Tidak ada data)\033[0m")
+        return
+    
+    col_widths = [len(h) for h in headers]
+    for row in rows:
+        for i, cell in enumerate(row):
+            col_widths[i] = max(col_widths[i], len(str(cell)[:20]))
+    
+    total_width = sum(col_widths) + 3 * (len(headers) - 1) + 4
+    
+    print("\033[90m" + "┌" + "─" * (total_width - 2) + "┐" + "\033[0m")
+    header_str = "\033[90m│\033[0m " + " \033[90m│\033[0m ".join(f"\033[1m{h}\033[0m".ljust(w) for h, w in zip(headers, col_widths)) + " \033[90m│\033[0m"
+    print(header_str)
+    print("\033[90m" + "├" + "─" * (total_width - 2) + "┤" + "\033[0m")
+    
+    for row in rows[:20]:
+        row_str = "\033[90m│\033[0m " + " \033[90m│\033[0m ".join(str(c)[:20].ljust(w) for c, w in zip(row, col_widths)) + " \033[90m│\033[0m"
+        print(row_str)
+    
+    if len(rows) > 20:
+        print("\033[90m│\033[0m" + f" ... dan {len(rows) - 20} data lainnya".center(total_width - 2) + "\033[90m│\033[0m")
+    
+    print("\033[90m" + "└" + "─" * (total_width - 2) + "┘" + "\033[0m")
+
+def print_progress(current, total, prefix=""):
+    percent = (current / total) * 100
+    filled = int(30 * current / total)
+    bar = "█" * filled + "░" * (30 - filled)
+    print(f"\r\033[90m{prefix}\033[0m [{bar}] \033[1;36m{percent:.1f}%\033[0m", end="", flush=True)
+
 def interactive_mode():
     csv_file = "data_pelanggan.csv"
     output_dir = "output"
@@ -225,48 +283,89 @@ def interactive_mode():
             data = list(csv.DictReader(f))
 
     while True:
-        print("\n--- Mailing List Interactive Mode ---")
-        print("1. Lihat Daftar Pelanggan (dari CSV)")
-        print("2. Cetak Laporan dari Excel")
-        print("3. Cetak Laporan dari CSV")
-        print("q. Keluar")
+        print_header()
+        
+        # Status info
+        csv_status = "\033[32m✓\033[0m" if data else "\033[31m✗\033[0m"
+        output_status = "\033[32m✓\033[0m" if os.path.exists(output_dir) else "\033[31m✗\033[0m"
+        print(f"\033[90m  CSV Data:\033[0m {csv_status} {len(data)} records  \033[90m│\033[0m  \033[90mOutput Dir:\033[0m {output_status}")
+        print()
+        
+        print_menu()
         
         try:
-            choice = input("\nPilih menu: ").strip().lower()
+            choice = input("\033[1;36m  Pilih menu ›\033[0m ").strip().lower()
         except (KeyboardInterrupt, EOFError):
-            print("\n\nKeluar...")
+            print("\n\n\033[90m👋 Keluar...\033[0m")
             break
         
         if choice == '1':
-            for row in data:
-                print(f"{row.get('no_pelanggan')} | {row.get('nama')}")
+            print_header()
+            print("\n\033[1;35m┌─ DAFTAR PELANGGAN\033[0m\n")
+            if data:
+                rows = [[row.get('no_pelanggan', '-'), row.get('nama', '-')] for row in data]
+                print_table(["No Pelanggan", "Nama"], rows)
+            else:
+                print_status("Data CSV kosong atau tidak ditemukan", "warning")
+            input("\n\033[90m  Tekan Enter untuk kembali...\033[0m")
+            
         elif choice == '2':
-            prompt = "Masukkan atau seret (drag & drop) file Excel ke sini\n(Default: PENYEGELAN & PENCABUTAN JAN 26.xlsx): "
+            print_header()
+            print("\n\033[1;35m┌─ CETAK LAPORAN DARI EXCEL\033[0m\n")
+            print("\033[90m  Drag & drop file Excel atau ketik path\033[0m")
+            print("\033[90m  Default: PENYEGELAN & PENCABUTAN JAN 26.xlsx\033[0m\n")
+            
             try:
-                excel_file = input(prompt).strip().strip("'\"") or "PENYEGELAN & PENCABUTAN JAN 26.xlsx"
+                excel_file = input("\033[1;36m  File ›\033[0m ").strip().strip("'\"") or "PENYEGELAN & PENCABUTAN JAN 26.xlsx"
             except (KeyboardInterrupt, EOFError):
-                print("\n\nKeluar...")
+                print("\n\n\033[90m👋 Keluar...\033[0m")
                 break
             
             if os.path.exists(excel_file):
+                print_status(f"Membaca file: {os.path.basename(excel_file)}...", "info")
                 data_dict = load_excel_data(excel_file)
                 if data_dict:
-                    if not os.path.exists(output_dir): os.makedirs(output_dir)
-                    for sheet, rows in data_dict.items():
+                    if not os.path.exists(output_dir): 
+                        os.makedirs(output_dir)
+                        print_status(f"Membuat direktori: {output_dir}", "info")
+                    
+                    total_sheets = len(data_dict)
+                    for idx, (sheet, rows) in enumerate(data_dict.items(), 1):
                         path = os.path.join(output_dir, f"SPK_{sheet}.pdf")
+                        print_progress(idx, total_sheets, f"  Generating {sheet}")
                         generate_grouped_pdf(rows, path, sheet)
-                        print(f"Berhasil: {path}")
+                    
+                    print()  # New line after progress
+                    print_status(f"Berhasil generate {total_sheets} file PDF!", "success")
+                    print(f"\033[90m  📁 Lokasi: ./{output_dir}/\033[0m")
+                else:
+                    print_status("Gagal membaca data Excel", "error")
             else:
-                print("File tidak ditemukan.")
+                print_status(f"File tidak ditemukan: {excel_file}", "error")
+            
+            input("\n\033[90m  Tekan Enter untuk kembali...\033[0m")
+            
         elif choice == '3':
+            print_header()
+            print("\n\033[1;35m┌─ CETAK LAPORAN DARI CSV\033[0m\n")
+            
             if data:
-                if not os.path.exists(output_dir): os.makedirs(output_dir)
+                if not os.path.exists(output_dir): 
+                    os.makedirs(output_dir)
                 path = os.path.join(output_dir, "SPK_PENYEGELAN.pdf")
+                print_status("Generating PDF...", "info")
                 generate_grouped_pdf(data, path, "PENYEGELAN")
-                print(f"Berhasil: {path}")
+                print_status(f"Berhasil: {path}", "success")
             else:
-                print("Data CSV kosong.")
+                print_status("Data CSV kosong atau tidak ditemukan", "warning")
+            
+            input("\n\033[90m  Tekan Enter untuk kembali...\033[0m")
+            
         elif choice == 'q':
+            clear_screen()
+            print("\n\033[1;36m" + "═" * 60 + "\033[0m")
+            print("\033[1;33m  ✨ Terima kasih telah menggunakan Mailing List CLI!\033[0m")
+            print("\033[1;36m" + "═" * 60 + "\033[0m\n")
             break
 
 def main():
