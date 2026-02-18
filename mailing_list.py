@@ -8,7 +8,7 @@ from reportlab.lib.units import cm
 from reportlab.lib.utils import ImageReader
 from PIL import Image
 
-LOGO_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logo", "images.png")
+LOGO_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), "logo", "images.png")
 DEFAULT_CABANG = "Kotabaru"
 DEFAULT_MANAGER = "Endang Komara"
 
@@ -31,9 +31,9 @@ def get_logo_reader():
 
 # Try to import pandas for Excel support
 try:
-    import pandas as pd
+    import pandas as pd  # type: ignore
     # Fix for 'extLst' error in openpyxl
-    from openpyxl.styles.fills import PatternFill
+    from openpyxl.styles.fills import PatternFill  # type: ignore
     original_init = PatternFill.__init__
     def patched_init(self, *args, **kwargs):
         kwargs.pop('extLst', None)
@@ -57,7 +57,7 @@ def draw_spk(c, data, x_offset, width_half, height, spk_type="PENYEGELAN"):
     # Logo
     logo = get_logo_reader()
     if logo:
-        c.drawImage(logo, x_offset + margin, height - 3.2*cm, width=2*cm, height=2*cm, preserveAspectRatio=True, mask='auto')
+        c.drawImage(logo, x_offset + margin, height - 3.2*cm, width=2*cm, height=2*cm, preserveAspectRatio=True)
     
     # Thick Line
     c.setLineWidth(1.5)
@@ -231,13 +231,22 @@ def interactive_mode():
         print("3. Cetak Laporan dari CSV")
         print("q. Keluar")
         
-        choice = input("\nPilih menu: ").strip().lower()
+        try:
+            choice = input("\nPilih menu: ").strip().lower()
+        except (KeyboardInterrupt, EOFError):
+            print("\n\nKeluar...")
+            break
+        
         if choice == '1':
             for row in data:
                 print(f"{row.get('no_pelanggan')} | {row.get('nama')}")
         elif choice == '2':
             prompt = "Masukkan atau seret (drag & drop) file Excel ke sini\n(Default: PENYEGELAN & PENCABUTAN JAN 26.xlsx): "
-            excel_file = input(prompt).strip().strip("'\"") or "PENYEGELAN & PENCABUTAN JAN 26.xlsx"
+            try:
+                excel_file = input(prompt).strip().strip("'\"") or "PENYEGELAN & PENCABUTAN JAN 26.xlsx"
+            except (KeyboardInterrupt, EOFError):
+                print("\n\nKeluar...")
+                break
             
             if os.path.exists(excel_file):
                 data_dict = load_excel_data(excel_file)
@@ -279,4 +288,7 @@ def main():
         interactive_mode()
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n\nKeluar...")
