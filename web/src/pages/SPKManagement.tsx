@@ -180,12 +180,21 @@ export function SPKManagement() {
   }, [sortedData, currentPage, itemsPerPage]);
 
   // Handlers
-  const handleSelectAll = () => {
+  const handleSelectPage = () => {
     if (selectedItems.size === paginatedData.length) {
       setSelectedItems(new Set());
     } else {
       const start = (currentPage - 1) * itemsPerPage;
       const allIds = new Set(paginatedData.map((_, index) => start + index));
+      setSelectedItems(allIds);
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (selectedItems.size === sortedData.length) {
+      setSelectedItems(new Set());
+    } else {
+      const allIds = new Set(sortedData.map((_, index) => index));
       setSelectedItems(allIds);
     }
   };
@@ -909,6 +918,161 @@ export function SPKManagement() {
         </div>
       </div>
 
+      {/* Generated SPK Section - Shown right after filter card */}
+      {generatedSPK && generatedSPK.length > 0 && (
+        <div className="card" style={{ marginBottom: '1rem', border: '2px solid var(--primary)' }}>
+          <div className="card-header" style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '1rem',
+            background: 'var(--primary)',
+            color: 'white',
+            borderRadius: '0.5rem 0.5rem 0 0',
+            margin: '-1rem -1rem 1rem -1rem',
+            padding: '1rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <FilePlus size={20} />
+              <h2 className="card-title" style={{ color: 'white', margin: 0 }}>SPK Tergenerate ({generatedSPK.length})</h2>
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={exportAllToPDF}
+                disabled={generatingPdfId === 'bulk'}
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: '0.375rem',
+                  border: 'none',
+                  background: 'white',
+                  color: 'var(--primary)',
+                  cursor: generatingPdfId === 'bulk' ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: 600,
+                  opacity: generatingPdfId === 'bulk' ? 0.6 : 1
+                }}
+              >
+                {generatingPdfId === 'bulk' ? (
+                  <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                ) : (
+                  <FileDown size={16} />
+                )}
+                {generatingPdfId === 'bulk' ? 'Memproses...' : 'Export Semua PDF'}
+              </button>
+              <button
+                onClick={() => setGeneratedSPK(null)}
+                style={{
+                  padding: '0.5rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid rgba(255,255,255,0.3)',
+                  background: 'transparent',
+                  color: 'white',
+                  cursor: 'pointer'
+                }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
+          
+          {pdfError && (
+            <div style={{ 
+              padding: '0.75rem 1rem', 
+              background: '#fef2f2', 
+              border: '1px solid #fecaca',
+              borderRadius: '0.5rem',
+              marginBottom: '1rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: '#dc2626'
+            }}>
+              <AlertCircle size={18} />
+              {pdfError}
+              <button 
+                onClick={() => setPdfError(null)}
+                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626' }}
+              >
+                ×
+              </button>
+            </div>
+          )}
+          
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
+                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>No SPK</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>Tipe</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>No Pelanggan</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>Nama</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>Tanggal Generate</th>
+                  <th style={{ padding: '0.75rem', textAlign: 'center' }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {generatedSPK.map((spk, index) => (
+                  <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                    <td style={{ padding: '0.75rem', fontFamily: 'monospace', fontWeight: 600 }}>{spk.spk_number}</td>
+                    <td style={{ padding: '0.75rem' }}>
+                      <span style={{
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '0.25rem',
+                        background: spk.type === 'penyegelan' ? '#f59e0b' : '#ef4444',
+                        color: 'white',
+                        fontSize: '0.75rem',
+                        textTransform: 'capitalize',
+                        fontWeight: 500
+                      }}>
+                        {spk.type}
+                      </span>
+                    </td>
+                    <td style={{ padding: '0.75rem', fontFamily: 'monospace' }}>
+                      {spk.type === 'penyegelan' 
+                        ? (spk.data as Penyegelan)['NOMOR PELANGGAN'] 
+                        : (spk.data as Pencabutan)['NO SAMB']}
+                    </td>
+                    <td style={{ padding: '0.75rem' }}>{spk.data['NAMA']}</td>
+                    <td style={{ padding: '0.75rem' }}>{spk.generated_at}</td>
+                    <td style={{ padding: '0.75rem', textAlign: 'center' }}>
+                      <button
+                        onClick={() => generateSPKPDF(spk)}
+                        disabled={generatingPdfId === spk.spk_number}
+                        style={{
+                          padding: '0.5rem',
+                          borderRadius: '0.375rem',
+                          border: 'none',
+                          background: generatingPdfId === spk.spk_number ? 'var(--bg-secondary)' : 'var(--primary)',
+                          color: generatingPdfId === spk.spk_number ? 'var(--text-secondary)' : 'white',
+                          cursor: generatingPdfId === spk.spk_number ? 'not-allowed' : 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
+                          margin: '0 auto'
+                        }}
+                      >
+                        {generatingPdfId === spk.spk_number ? (
+                          <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
+                        ) : (
+                          <Printer size={16} />
+                        )}
+                        <span style={{ fontSize: '0.75rem' }}>
+                          {generatingPdfId === spk.spk_number ? 'Memproses...' : 'Cetak'}
+                        </span>
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
       {/* Data Display */}
       <div className="card">
         <div className="card-header" style={{ 
@@ -925,25 +1089,49 @@ export function SPKManagement() {
             <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>
               Halaman {currentPage} dari {totalPages} ({sortedData.length.toLocaleString()} data)
             </span>
-            <button
-              onClick={handleSelectAll}
-              disabled={loading}
-              style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '0.375rem',
-                border: '1px solid var(--border-color)',
-                background: 'transparent',
-                color: 'var(--text-primary)',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                opacity: loading ? 0.6 : 1
-              }}
-            >
-              {selectedItems.size > 0 ? <CheckSquare size={16} /> : <Square size={16} />}
-              {selectedItems.size > 0 ? 'Batal Pilih' : 'Pilih Semua'}
-            </button>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={handleSelectPage}
+                disabled={loading}
+                style={{
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid var(--border-color)',
+                  background: 'transparent',
+                  color: 'var(--text-primary)',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  fontSize: '0.75rem',
+                  opacity: loading ? 0.6 : 1
+                }}
+              >
+                {selectedItems.size > 0 && selectedItems.size <= itemsPerPage ? <CheckSquare size={14} /> : <Square size={14} />}
+                Halaman Ini
+              </button>
+              <button
+                onClick={handleSelectAll}
+                disabled={loading}
+                style={{
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '0.375rem',
+                  border: selectedItems.size === sortedData.length ? '1px solid var(--success)' : '1px solid var(--border-color)',
+                  background: selectedItems.size === sortedData.length ? 'var(--success)' : 'transparent',
+                  color: selectedItems.size === sortedData.length ? 'white' : 'var(--text-primary)',
+                  cursor: loading ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.25rem',
+                  fontSize: '0.75rem',
+                  fontWeight: selectedItems.size === sortedData.length ? 600 : 400,
+                  opacity: loading ? 0.6 : 1
+                }}
+              >
+                {selectedItems.size === sortedData.length && sortedData.length > 0 ? <CheckSquare size={14} /> : <Square size={14} />}
+                Semua Data ({sortedData.length})
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1275,151 +1463,6 @@ export function SPKManagement() {
           </div>
         )}
       </div>
-
-      {generatedSPK && generatedSPK.length > 0 && (
-        <div className="card" style={{ marginTop: '1.5rem' }}>
-          <div className="card-header" style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '1rem'
-          }}>
-            <h2 className="card-title">SPK Tergenerate ({generatedSPK.length})</h2>
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
-              <button
-                onClick={exportAllToPDF}
-                disabled={generatingPdfId === 'bulk'}
-                style={{
-                  padding: '0.5rem 1rem',
-                  borderRadius: '0.375rem',
-                  border: '1px solid var(--border-color)',
-                  background: 'var(--bg-secondary)',
-                  color: 'var(--text-primary)',
-                  cursor: generatingPdfId === 'bulk' ? 'not-allowed' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  fontSize: '0.875rem',
-                  opacity: generatingPdfId === 'bulk' ? 0.6 : 1
-                }}
-              >
-                {generatingPdfId === 'bulk' ? (
-                  <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-                ) : (
-                  <FileDown size={16} />
-                )}
-                {generatingPdfId === 'bulk' ? 'Memproses...' : 'Export Semua'}
-              </button>
-              <button
-                onClick={() => setGeneratedSPK(null)}
-                style={{
-                  padding: '0.5rem',
-                  borderRadius: '0.375rem',
-                  border: '1px solid var(--border-color)',
-                  background: 'var(--bg-secondary)',
-                  color: 'var(--text-primary)',
-                  cursor: 'pointer'
-                }}
-              >
-                <X size={16} />
-              </button>
-            </div>
-          </div>
-          
-          {pdfError && (
-            <div style={{ 
-              padding: '0.75rem 1rem', 
-              background: '#fef2f2', 
-              border: '1px solid #fecaca',
-              borderRadius: '0.5rem',
-              margin: '1rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              color: '#dc2626'
-            }}>
-              <AlertCircle size={18} />
-              {pdfError}
-              <button 
-                onClick={() => setPdfError(null)}
-                style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626' }}
-              >
-                ×
-              </button>
-            </div>
-          )}
-          
-          <div style={{ overflowX: 'auto' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr style={{ borderBottom: '2px solid var(--border-color)' }}>
-                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>No SPK</th>
-                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>Tipe</th>
-                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>No Pelanggan</th>
-                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>Nama</th>
-                  <th style={{ padding: '0.75rem', textAlign: 'left' }}>Tanggal Generate</th>
-                  <th style={{ padding: '0.75rem', textAlign: 'center' }}>Aksi</th>
-                </tr>
-              </thead>
-              <tbody>
-                {generatedSPK.map((spk, index) => (
-                  <tr key={index} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                    <td style={{ padding: '0.75rem', fontFamily: 'monospace', fontWeight: 600 }}>{spk.spk_number}</td>
-                    <td style={{ padding: '0.75rem' }}>
-                      <span style={{
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: '0.25rem',
-                        background: spk.type === 'penyegelan' ? '#f59e0b' : '#ef4444',
-                        color: 'white',
-                        fontSize: '0.75rem',
-                        textTransform: 'capitalize',
-                        fontWeight: 500
-                      }}>
-                        {spk.type}
-                      </span>
-                    </td>
-                    <td style={{ padding: '0.75rem', fontFamily: 'monospace' }}>
-                      {spk.type === 'penyegelan' 
-                        ? (spk.data as Penyegelan)['NOMOR PELANGGAN'] 
-                        : (spk.data as Pencabutan)['NO SAMB']}
-                    </td>
-                    <td style={{ padding: '0.75rem' }}>{spk.data['NAMA']}</td>
-                    <td style={{ padding: '0.75rem' }}>{spk.generated_at}</td>
-                    <td style={{ padding: '0.75rem', textAlign: 'center' }}>
-                      <button
-                        onClick={() => generateSPKPDF(spk)}
-                        disabled={generatingPdfId === spk.spk_number}
-                        style={{
-                          padding: '0.5rem',
-                          borderRadius: '0.375rem',
-                          border: 'none',
-                          background: generatingPdfId === spk.spk_number ? 'var(--bg-secondary)' : 'var(--primary)',
-                          color: generatingPdfId === spk.spk_number ? 'var(--text-secondary)' : 'white',
-                          cursor: generatingPdfId === spk.spk_number ? 'not-allowed' : 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.25rem',
-                          margin: '0 auto'
-                        }}
-                      >
-                        {generatingPdfId === spk.spk_number ? (
-                          <Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} />
-                        ) : (
-                          <Printer size={16} />
-                        )}
-                        <span style={{ fontSize: '0.75rem' }}>
-                          {generatingPdfId === spk.spk_number ? 'Memproses...' : 'Cetak'}
-                        </span>
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
 
       {/* Confirmation Modal */}
       {showConfirmModal && (

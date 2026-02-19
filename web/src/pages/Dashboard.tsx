@@ -251,7 +251,7 @@ export function Dashboard() {
                 <Icon size={28} />
               </div>
               <div className="stat-content" style={{ position: 'relative', zIndex: 1 }}>
-                <div className="stat-value" style={{ fontSize: '1.75rem' }}>{stat.value}</div>
+                <div className="stat-value" style={{ fontSize: stat.title === 'Total Tunggakan' ? '1rem' : '1.25rem', wordBreak: 'break-word', lineHeight: 1.2 }}>{stat.value}</div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem' }}>
                   <span 
                     style={{ 
