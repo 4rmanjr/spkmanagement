@@ -4,6 +4,7 @@ import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { api } from '../api';
 import type { Letter } from '../types';
+import logoImage from '../../logo/images.png';
 
 export function Letters() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -45,15 +46,9 @@ export function Letters() {
     const startX = xOffset + 14;
     const endX = xOffset + 134.5;
     const centerX = xOffset + 74.25;
-    
-    const sectionLabel = xOffset === 0 ? 'PELANGGAN' : 'ARSIP';
 
-    // Logo placeholder
-    doc.setDrawColor(0);
-    doc.rect(startX, 10, 18, 18); // Box for logo
-    doc.setFontSize(5);
-    doc.text('LOGO', startX + 9, 17, { align: 'center' });
-    doc.text('TIRTA TARUM', startX + 9, 21, { align: 'center' });
+    // Logo
+    doc.addImage(logoImage, 'PNG', startX + 1, 8, 20, 20);
 
     // Header text
     doc.setFont('helvetica', 'bold');
@@ -64,12 +59,6 @@ export function Letters() {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.text('Jl. Surotokunto No.205 Karawang Timur', centerX + 10, 25, { align: 'center' });
-    
-    // Section label
-    doc.setFontSize(7);
-    doc.setTextColor(150);
-    doc.text(sectionLabel, centerX + 10, 28, { align: 'center' });
-    doc.setTextColor(0);
 
     // Separator line
     doc.setLineWidth(0.4);

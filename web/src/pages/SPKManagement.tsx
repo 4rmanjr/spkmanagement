@@ -22,6 +22,7 @@ import {
 import { api } from '../api';
 import type { Penyegelan, Pencabutan, SPKItem } from '../types';
 import jsPDF from 'jspdf';
+import logoImage from '../../logo/images.png';
 
 type TabType = 'penyegelan' | 'pencabutan';
 type ViewMode = 'table' | 'cards';
@@ -261,13 +262,7 @@ export function SPKManagement() {
         const endX = xOffset + 134.5;
         const centerX = xOffset + 74.25;
         
-        const sectionLabel = xOffset === 0 ? 'PELANGGAN' : 'ARSIP';
-        
-        doc.setDrawColor(0);
-        doc.rect(startX, 10, 18, 18);
-        doc.setFontSize(5);
-        doc.text('LOGO', startX + 9, 17, { align: 'center' });
-        doc.text('TIRTA TARUM', startX + 9, 21, { align: 'center' });
+        doc.addImage(logoImage, 'PNG', startX + 1, 8, 20, 20);
         
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(9);
@@ -277,11 +272,6 @@ export function SPKManagement() {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
         doc.text('Jl. Surotokunto No.205 Karawang Timur', centerX + 10, 25, { align: 'center' });
-        
-        doc.setFontSize(7);
-        doc.setTextColor(150);
-        doc.text(sectionLabel, centerX + 10, 28, { align: 'center' });
-        doc.setTextColor(0);
         
         doc.setLineWidth(0.4);
         doc.line(startX, 30, endX, 30);
@@ -436,13 +426,7 @@ export function SPKManagement() {
         const endX = xOffset + 134.5;
         const centerX = xOffset + 74.25;
         
-        const sectionLabel = xOffset === 0 ? 'PELANGGAN' : 'ARSIP';
-        
-        doc.setDrawColor(0);
-        doc.rect(startX, 10, 18, 18);
-        doc.setFontSize(5);
-        doc.text('LOGO', startX + 9, 17, { align: 'center' });
-        doc.text('TIRTA TARUM', startX + 9, 21, { align: 'center' });
+        doc.addImage(logoImage, 'PNG', startX + 1, 8, 20, 20);
         
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(9);
@@ -452,11 +436,6 @@ export function SPKManagement() {
         doc.setFont('helvetica', 'normal');
         doc.setFontSize(8);
         doc.text('Jl. Surotokunto No.205 Karawang Timur', centerX + 10, 25, { align: 'center' });
-        
-        doc.setFontSize(7);
-        doc.setTextColor(150);
-        doc.text(sectionLabel, centerX + 10, 28, { align: 'center' });
-        doc.setTextColor(0);
         
         doc.setLineWidth(0.4);
         doc.line(startX, 30, endX, 30);
