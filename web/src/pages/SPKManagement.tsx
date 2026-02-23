@@ -1497,7 +1497,7 @@ export function SPKManagement() {
                         </button>
                       </td>
                       <td style={{ padding: '0.75rem' }}>
-                        {activeTab === 'penyegelan' ? (item as Penyegelan)['NO.'] : (item as Pencabutan)['NO']}
+                        {actualIndex + 1}
                       </td>
                       {activeTab === 'penyegelan' ? (
                         <>
